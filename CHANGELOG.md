@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ordarr/books/compare/v1.0.0...v1.1.0) (2025-02-08)
+
+
+### Features
+
+* Removing DB from tests of service layer ([000436a](https://github.com/ordarr/books/commit/000436a7a2ed60cb2953847756efe61c942d548c))
+
 ## 1.0.0 (2025-02-02)
 
 
