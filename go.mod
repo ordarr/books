@@ -3,13 +3,11 @@ module github.com/ordarr/books
 go 1.23.5
 
 require (
-	github.com/google/uuid v1.6.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/ordarr/data v0.1.2
+	github.com/ordarr/data v1.1.4
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.4
-	gorm.io/gorm v1.25.12
 )
 
 require (

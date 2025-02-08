@@ -10,57 +10,68 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 	"net"
 )
 
 type booksServer struct {
 	pb.UnimplementedBooksServer
-	repo core.BookRepository
+	repo core.IBookRepository
 }
 
 type BooksResult []*pb.Book
 
-func (s *booksServer) GetBooks(_ context.Context, _ *emptypb.Empty) (*pb.BooksResponse, error) {
+func (s *booksServer) GetBooks(_ context.Context, request *pb.GetBooksRequest) (*pb.BooksResponse, error) {
 	result := &BooksResult{}
-	if copier.Copy(result, s.repo.GetAll()) != nil {
+	var books []*core.Book
+	var err error
+
+	if len(request.Ids) == 0 && len(request.Names) == 0 {
+		books, err = s.repo.GetAll()
+	} else if request.Ids != nil {
+		books, err = s.repo.GetByID(request.Ids)
+	} else {
+		books, err = s.repo.GetByName(request.Names)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if copier.Copy(&result, books) != nil {
 		return nil, status.Error(codes.Unknown, "unknown error")
 	}
 	return &pb.BooksResponse{Content: *result}, nil
 }
 
-func (s *booksServer) GetBookByTitle(_ context.Context, request *pb.ValueRequest) (*pb.BookResponse, error) {
+func (s *booksServer) CreateBook(_ context.Context, request *pb.CreateBookRequest) (*pb.BookResponse, error) {
 	result := &pb.Book{}
-	book := s.repo.GetByTitle(request.Value)
-	if book.ID == "" || copier.Copy(&result, book) != nil {
-		return nil, status.Error(codes.NotFound, "book not found")
+	created := &core.Book{
+		Name: request.Name,
+	}
+	created, err := s.repo.Create(created)
+	if err != nil {
+		return nil, err
+	}
+	if copier.Copy(&result, created) != nil {
+		return nil, status.Error(codes.Unknown, "unknown error")
 	}
 	return &pb.BookResponse{Content: result}, nil
 }
 
-func (s *booksServer) GetBookById(_ context.Context, request *pb.ValueRequest) (*pb.BookResponse, error) {
-	result := &pb.Book{}
-	book := s.repo.GetById(request.Value)
-	if book.ID == "" || copier.Copy(&result, book) != nil {
-		return nil, status.Error(codes.NotFound, "book not found")
-	}
-	return &pb.BookResponse{Content: result}, nil
+func Server(repository core.IBookRepository) (*grpc.Server, error) {
+	baseServer := grpc.NewServer()
+	pb.RegisterBooksServer(baseServer, &booksServer{repo: repository})
+	return baseServer, nil
 }
 
-func NewServer(repository core.BookRepository) pb.BooksServer {
-	t := &booksServer{
-		repo: repository,
-	}
-	return t
-}
-
-func Server(repository core.BookRepository) (pb.BooksClient, func()) {
+func CreateClient(repository core.IBookRepository) (pb.BooksClient, func()) {
 	buffer := 101024 * 1024
 	lis := bufconn.Listen(buffer)
 
 	baseServer := grpc.NewServer()
-	pb.RegisterBooksServer(baseServer, NewServer(repository))
+
+	pb.RegisterBooksServer(baseServer, &booksServer{repo: repository})
+
 	go func() {
 		if err := baseServer.Serve(lis); err != nil {
 			log.Printf("error serving server: %v", err)
