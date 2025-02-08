@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/ordarr/books/compare/v1.1.0...v1.1.1) (2025-02-08)
+
+
+### Bug Fixes
+
+* tidying go mods ([404d5d7](https://github.com/ordarr/books/commit/404d5d7f918f820f03242612f213abd8be5d094a))
+
 ## [1.1.0](https://github.com/ordarr/books/compare/v1.0.0...v1.1.0) (2025-02-08)
 
 
