@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/ordarr/books/compare/v1.1.1...v1.1.2) (2025-02-08)
+
+
+### Bug Fixes
+
+* adding registration build ([51a1300](https://github.com/ordarr/books/commit/51a130084a1d41b966f9c273e7ced657faad5594))
+
 ## [1.1.1](https://github.com/ordarr/books/compare/v1.1.0...v1.1.1) (2025-02-08)
 
 
